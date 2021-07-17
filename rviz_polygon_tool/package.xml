@@ -20,6 +20,8 @@
   <depend>polygon_coverage_msgs</depend>
   <depend>polygon_coverage_geometry</depend>
   <depend>geometry_msgs</depend>
+  <depend>planning_ros_msgs</depend>
+
   <depend>cgal_catkin</depend>
 
   <export>

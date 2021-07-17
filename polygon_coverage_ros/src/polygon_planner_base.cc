@@ -18,15 +18,19 @@
  */
 
 #include "polygon_coverage_ros/polygon_planner_base.h"
-#include "polygon_coverage_ros/ros_interface.h"
 
-#include <functional>
+#include <geometry_msgs/PoseArray.h>
+#include <nav_msgs/Path.h>
+#include <planning_ros_msgs/Path.h>
+#include <planning_ros_msgs/StateTransition.h>
 
 #include <polygon_coverage_msgs/msg_from_xml_rpc.h>
 #include <polygon_coverage_planners/cost_functions/path_cost_functions.h>
-
-#include <geometry_msgs/PoseArray.h>
 #include <visualization_msgs/MarkerArray.h>
+
+#include <functional>
+
+#include "polygon_coverage_ros/ros_interface.h"
 
 namespace polygon_coverage_planning {
 
@@ -59,6 +63,12 @@ void PolygonPlannerBase::advertiseTopics() {
       "path_markers", 1, true);
   waypoint_list_pub_ = nh_.advertise<geometry_msgs::PoseArray>(
       "waypoint_list", 1, latch_topics_);
+  path_pub_ = nh_.advertise<planning_ros_msgs::Path>(
+      "quadrotor/coverage_path_visualization", 1, true);
+  waypoints_pub_ =
+      nh_.advertise<nav_msgs::Path>("quadrotor/waypoints", 1, true);
+  sm_pub_ = nh_.advertise<planning_ros_msgs::StateTransition>(
+      "quadrotor/state_trigger", 1);
   // Services for generating the plan.
   set_polygon_srv_ = nh_private_.advertiseService(
       "set_polygon", &PolygonPlannerBase::setPolygonCallback, this);
@@ -320,6 +330,38 @@ bool PolygonPlannerBase::publishTrajectoryPoints() {
 
   // Publishing
   waypoint_list_pub_.publish(trajectory_points_pose_array);
+
+  // Publish as nav_msgs::path message for actual execution
+  nav_msgs::Path waypoints_msg;
+  geometry_msgs::PoseStamped cur_pose_msg;
+  // Publish as planning_ros_msgs::path message for visualization
+  planning_ros_msgs::Path global_path_msg;
+  geometry_msgs::Point this_pt;
+  for (unsigned int i = 0; i < trajectory_points_pose_array.poses.size(); ++i) {
+    if (i > 0) {
+      cur_pose_msg.pose = trajectory_points_pose_array.poses[i];
+      cur_pose_msg.pose.position.z = 5.0;
+      waypoints_msg.poses.push_back(cur_pose_msg);
+    }
+    this_pt = trajectory_points_pose_array.poses[i].position;
+    this_pt.z = 5.0;
+    global_path_msg.waypoints.push_back(this_pt);
+  }
+
+  waypoints_msg.header.frame_id = "quadrotor/map";
+  waypoints_pub_.publish(waypoints_msg);
+
+  global_path_msg.header.frame_id = "quadrotor/map";
+  path_pub_.publish(global_path_msg);
+  ROS_INFO("Coverage plan succeeded!");
+
+  // triggering state transition
+  ros::Rate r(20);
+  r.sleep();
+  planning_ros_msgs::StateTransition st;
+  st.transition.data = std::string("waypoints");
+  sm_pub_.publish(st);
+
 
   // Success
   return true;

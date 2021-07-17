@@ -123,6 +123,12 @@ class PolygonPlannerBase {
   ros::ServiceServer publish_visualization_srv_;
   ros::ServiceServer publish_plan_points_srv_;
   ros::ServiceServer publish_all_srv_;
+  ros::Publisher path_pub_;
+  ros::Publisher waypoints_pub_;
+  ros::Publisher sm_pub_;
+
+
+  
 
   // Planner status
   bool planning_complete_;
