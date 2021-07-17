@@ -23,7 +23,6 @@
 #include <nav_msgs/Path.h>
 #include <planning_ros_msgs/Path.h>
 #include <planning_ros_msgs/StateTransition.h>
-
 #include <polygon_coverage_msgs/msg_from_xml_rpc.h>
 #include <polygon_coverage_planners/cost_functions/path_cost_functions.h>
 #include <visualization_msgs/MarkerArray.h>
@@ -338,11 +337,10 @@ bool PolygonPlannerBase::publishTrajectoryPoints() {
   planning_ros_msgs::Path global_path_msg;
   geometry_msgs::Point this_pt;
   for (unsigned int i = 0; i < trajectory_points_pose_array.poses.size(); ++i) {
-    if (i > 0) {
-      cur_pose_msg.pose = trajectory_points_pose_array.poses[i];
-      cur_pose_msg.pose.position.z = 5.0;
-      waypoints_msg.poses.push_back(cur_pose_msg);
-    }
+    cur_pose_msg.pose = trajectory_points_pose_array.poses[i];
+    cur_pose_msg.pose.position.z = 5.0;
+    waypoints_msg.poses.push_back(cur_pose_msg);
+
     this_pt = trajectory_points_pose_array.poses[i].position;
     this_pt.z = 5.0;
     global_path_msg.waypoints.push_back(this_pt);
@@ -361,7 +359,6 @@ bool PolygonPlannerBase::publishTrajectoryPoints() {
   planning_ros_msgs::StateTransition st;
   st.transition.data = std::string("waypoints");
   sm_pub_.publish(st);
-
 
   // Success
   return true;
