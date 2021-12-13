@@ -8,9 +8,9 @@ sweep_single_direction: false
 
 # Sensor model.
 sensor_model_type: 0 # [0: Line, 1: Frustum]
-lateral_overlap: 0.1
+lateral_overlap: 0.0
 lateral_footprint: 30.0 # Only for line sensor model.
-lateral_fov: 0.84 # Only for frustum sensor model.
+lateral_fov: 0.0 # Only for frustum sensor model.
 
 latch_topics: true
 
